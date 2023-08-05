@@ -1,0 +1,60 @@
+CREATE PROCEDURE InsertarPresupuesto
+    @ParametrosXML XML
+AS
+BEGIN
+    DECLARE @VehiculoId INT;
+    
+    
+    INSERT INTO Vehiculo (Marca, Modelo, Patente)
+    SELECT 
+        Marca = Parametro.value('(Marca)[1]', 'NVARCHAR(50)'),
+        Modelo = Parametro.value('(Modelo)[1]', 'NVARCHAR(50)'),
+        Patente = Parametro.value('(Patente)[1]', 'NVARCHAR(50)')
+    FROM @ParametrosXML.nodes('/Params') AS T(Parametro);
+
+    SET @VehiculoId = SCOPE_IDENTITY();
+
+    
+    INSERT INTO Automovil (IdVehiculo, Tipo, CantidadPuertas)
+    SELECT 
+        @VehiculoId,
+        TipoAuto = Parametro.value('(TipoAuto)[1]', 'NVARCHAR(50)'),
+        CantidadPuertas = Parametro.value('(CantidadPuertas)[1]', 'INT')
+    FROM @ParametrosXML.nodes('/Params[TipoVehiculo="auto"]') AS T(Parametro);
+
+    INSERT INTO Moto (IdVehiculo, Cilindrada)
+    SELECT 
+        @VehiculoId,
+        Cilindrada = Parametro.value('(Cilindrada)[1]', 'NVARCHAR(50)')
+    FROM @ParametrosXML.nodes('/Params[TipoVehiculo="moto"]') AS T(Parametro);
+
+INSERT INTO Presupuesto (IdVehiculo, Nombre, Apellido, Email, Total)
+SELECT 
+    @VehiculoId,
+    Parametro.value('(Nombre)[1]', 'NVARCHAR(50)') AS Nombre,
+    Parametro.value('(Apellido)[1]', 'NVARCHAR(50)') AS Apellido,
+    Parametro.value('(Email)[1]', 'NVARCHAR(100)') AS Email,
+    Parametro.value('(Total)[1]', 'DECIMAL(18, 2)') AS Total
+FROM @ParametrosXML.nodes('/Params') AS T(Parametro);
+
+
+DECLARE @PresupuestoId INT;
+SET @PresupuestoId = (SELECT Id FROM Presupuesto WHERE IdVehiculo = @VehiculoId);
+
+
+INSERT INTO Desperfecto (IdPresupuesto, Descripcion, ManoDeObra, Tiempo)
+SELECT 
+    @PresupuestoId,
+    DesperfectoDetalle.value('.', 'NVARCHAR(500)') AS Descripcion,
+    @ParametrosXML.value('(/Params/ManoObra)[1]', 'DECIMAL(18, 2)') AS ManoDeObra,
+    @ParametrosXML.value('(/Params/TiempoReparacion)[1]', 'NVARCHAR(50)') AS Tiempo
+FROM @ParametrosXML.nodes('/Params/Desperfecto/Descripcion') AS T(DesperfectoDetalle);
+
+
+INSERT INTO DesperfectoRepuesto (IdDesperfecto, IdRepuesto)
+SELECT
+    D.Id,
+    RepuestoDetalle.value('.', 'NVARCHAR(50)') AS Repuesto
+FROM @ParametrosXML.nodes('/Params/Repuesto/Repuesto') AS T(RepuestoDetalle)
+CROSS APPLY (SELECT Id FROM Desperfecto WHERE IdPresupuesto = @PresupuestoId) AS D;
+END

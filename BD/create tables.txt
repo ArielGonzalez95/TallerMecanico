@@ -1,0 +1,46 @@
+CREATE TABLE Vehiculo (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    marca VARCHAR(100),
+    modelo VARCHAR(100),
+    patente VARCHAR(20)
+);
+
+CREATE TABLE Presupuesto (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    Nombre VARCHAR(100),
+    Apellido VARCHAR(100),
+    Email VARCHAR(100),
+    Total DECIMAL(10, 2),
+    IdVehiculo INT,
+    FOREIGN KEY (IdVehiculo) REFERENCES Vehiculo(Id)
+);
+
+CREATE TABLE Desperfecto (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    idPresupuesto INT,
+    descripcion VARCHAR(255),
+    manodeobra DECIMAL(10, 2),
+    Tiempo INT,
+    FOREIGN KEY (idPresupuesto) REFERENCES Presupuesto(Id)
+);
+CREATE TABLE Automovil (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    idVehiculo INT,
+    Tipo VARCHAR(50),
+    CantidadPuertas INT,
+    FOREIGN KEY (idVehiculo) REFERENCES Vehiculo(Id)
+);
+
+CREATE TABLE Moto (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    idVehiculo INT,
+    Cilindrada INT,
+    FOREIGN KEY (idVehiculo) REFERENCES Vehiculo(Id)
+);
+CREATE TABLE DesperfectoRepuesto (
+    idDesperfecto INT,
+    idRepuesto INT,
+    PRIMARY KEY (idDesperfecto, idRepuesto),
+    FOREIGN KEY (idDesperfecto) REFERENCES Desperfecto(Id),
+    FOREIGN KEY (idRepuesto) REFERENCES Repuestos(id)
+);

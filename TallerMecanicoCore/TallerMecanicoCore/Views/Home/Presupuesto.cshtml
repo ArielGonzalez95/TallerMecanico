@@ -1,0 +1,214 @@
+﻿@model Presupuesto
+
+@{
+    ViewData["Title"] = "Crear Presupuesto";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<h1>Crear Presupuesto</h1>
+
+<div class="container mt-4">
+    <form id="formPresupuesto" action="@Url.Action("GenerarPresupuesto", "Home")" method="post">
+        <div class="form-group">
+            <label for="tipoSelect">Tipo de Vehículo</label>
+            <select id="tipoSelect" class="form-control" name="TipoVehiculo" required>
+                <option value="auto">Auto</option>
+                <option value="moto">Moto</option>
+            </select>
+        </div>
+        <div id="autoCampos">
+            <div class="form-group">
+                <label for="cantidadPuertas">Cantidad de puertas</label>
+                <input type="number" class="form-control" id="cantidadPuertas" name="CantidadPuertas" />
+            </div>
+            <div class="form-group">
+                <label for="tipoVehiculoSelect">Tipo de auto</label>
+                <input type="text" class="form-control" id="tipoVehiculoSelect" name="TipoAuto" />
+            </div>
+        </div>
+        <div id="motoCampos" style="display:none">
+            <div class="form-group">
+                <label for="cilindrada">Cilindrada</label>
+                <input type="text" class="form-control" id="cilindrada" name="Cilindrada" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="marca">Marca</label>
+            <input type="text" class="form-control" id="marca" name="Marca" required />
+        </div>
+        <div class="form-group">
+            <label for="modelo">Modelo</label>
+            <input type="text" class="form-control" id="modelo" name="Modelo" required />
+        </div>
+        <div class="form-group">
+            <label for="patente">Patente</label>
+            <input type="text" class="form-control" id="patente" name="Patente" required />
+        </div>
+        <div class="form-group">
+            <label for="manoObra">Valor de mano de obra ($)</label>
+            <input type="text" class="form-control" id="manoObra" name="ManoObra[]" required />
+        </div>
+        <div class="form-group">
+            <label for="tiempoReparacion">Tiempo de reparación en dias</label>
+            <input type="text" class="form-control" name="TiempoReparacion[]" required />
+        </div>
+        <div id="desperfectosContainer">
+            <div class="form-group">
+                <label for="desperfecto">Desperfecto</label>
+                <div class="input-group">
+                    <textarea class="form-control" name="Desperfecto[]" required></textarea>
+                    <div class="input-group-append">
+                        <button type="button" class="btn btn-danger btn-sm eliminarDesperfecto">Eliminar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button type="button" class="btn btn-success mt-2" id="agregarDesperfecto">Agregar Desperfecto</button>
+
+        <div id="repuestosContainer">
+            <div class="form-group">
+                <label for="repuestoSelect">Repuesto</label>
+                <div class="input-group">
+                    <select id="repuestoSelect" class="form-control" name="Repuesto[]"></select>
+                    <div class="input-group-append">
+                        <button type="button" class="btn btn-danger btn-sm eliminarRepuesto">Eliminar</button>
+                    </div>
+                </div>
+            </div>
+           
+        </div>
+        <button type="button" class="btn btn-success mt-2" id="agregarRepuesto">Agregar Repuesto</button>
+
+
+        <div class="container card">
+            <h2>Datos Cliente</h2>
+            <div class="form-group">
+                <label for="nombre">Nombre</label>
+                <input type="text" class="form-control" id="nombre" name="Nombre" required>
+            </div>
+            <div class="form-group">
+                <label for="apellido">Apellido</label>
+                <input type="text" class="form-control" id="apellido" name="Apellido" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" class="form-control" id="email" name="Email" required>
+            </div>
+
+        </div>
+        
+        <button type="submit" class="btn btn-primary mt-2">Generar Presupuesto</button>
+    </form>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="boot4alert.js"></script>
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            $(document).on("click", ".eliminarRepuesto", function () {
+                var repuestoContainer = $(this).closest(".form-group");
+
+                repuestoContainer.remove();
+            });
+
+            $(document).on("click", ".eliminarDesperfecto", function () {
+                var desperfectoContainer = $(this).closest(".form-group");
+
+                desperfectoContainer.remove();
+            });
+
+            $("#tipoSelect").on("change", function () {
+                var tipoSeleccionado = $(this).val();
+                $("#autoCampos, #motoCampos").hide();
+                $("#" + tipoSeleccionado + "Campos").show();
+            });
+
+
+
+            $("#agregarDesperfecto").on("click", function () {
+                var nuevoDesperfecto = '<div class="form-group">' +
+                    '<label for="desperfecto">Desperfecto</label>' +
+                    '<div class="input-group">' +
+                    '<textarea class="form-control" name="Desperfecto[]"></textarea>' +
+                    '<div class="input-group-append">' +
+                    '<button type="button" class="btn btn-danger btn-sm eliminarDesperfecto">Eliminar</button>' +
+                    '</div>' +
+                    '</div>' +
+                    '</div>';
+
+                $("#desperfectosContainer").append(nuevoDesperfecto);
+            });
+
+
+            var contadorRepuestos = 1; 
+
+            cargarRepuestos();
+
+            $("#agregarRepuesto").on("click", function () {
+                var nuevoRepuesto = '<div class="form-group">' +
+                    '<label for="repuestoSelect' + contadorRepuestos + '">Repuesto</label>' +
+                    '<div class="input-group">' +
+                    '<select id="repuestoSelect' + contadorRepuestos + '" class="form-control" name="Repuesto[]">' +
+                    '</select>' +
+                    '<div class="input-group-append">' +
+                    '<button type="button" class="btn btn-danger btn-sm eliminarRepuesto">Eliminar</button>' +
+                    '</div>' +
+                    '</div>' +
+                    '</div>';
+
+                $("#repuestosContainer").append(nuevoRepuesto);
+
+                cargarRepuestos(contadorRepuestos);
+
+                contadorRepuestos++;
+            });
+
+            function cargarRepuestos(contador) {
+                $.ajax({
+                    url: "/Home/Repuestos",
+                    type: "GET",
+                    dataType: "json",
+                    success: function (data) {
+                        var selectId = contador ? "repuestoSelect" + contador : "repuestoSelect";
+                        $("#" + selectId).empty();
+
+                        for (const repuesto of data) {
+                            $("#" + selectId).append(
+                                $("<option>", {
+                                    value: repuesto.codigo,
+                                    text: repuesto.descripcion
+                                })
+                            );
+                        }
+                    },
+                    error: function (error) {
+                        console.error(error);
+                    }
+                });
+            }
+
+            $("#formPresupuesto").on("submit", function (e) {
+                e.preventDefault(); 
+
+                var formData = $(this).serialize();
+
+
+                $.ajax({
+                    url: $(this).attr("action"),
+                    type: "POST",
+                    data: formData,
+                    success: function (response) {
+                        alert(response)
+                        window.location.href = '@Url.Action("Index", "Home")';
+                    },
+                    error: function (error) {
+
+                        alert(error)
+                    }
+                });
+            });
+        });
+    </script>
+}

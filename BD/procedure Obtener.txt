@@ -1,0 +1,30 @@
+CREATE PROCEDURE ObtenerDatosPresupuesto
+    @id INT = NULL
+AS
+BEGIN
+    SELECT 
+        p.Id,
+        p.Nombre,
+        p.Apellido,
+        p.Email,
+        p.Total,
+        v.Marca,
+        v.Modelo,
+        v.Patente,
+        a.CantidadPuertas,
+        m.Cilindrada,
+        d.Descripcion,
+        d.ManoDeObra,
+        d.Tiempo,
+        r.Nombre AS NombreRepuesto,
+        r.Precio
+    FROM Presupuesto p
+    JOIN Vehiculo v ON p.IdVehiculo = v.Id
+    LEFT JOIN Automovil a ON v.Id = a.IdVehiculo
+    LEFT JOIN Moto m ON v.Id = m.IdVehiculo
+    JOIN Desperfecto d ON p.Id = d.IdPresupuesto
+    JOIN DesperfectoRepuesto dr ON d.Id = dr.IdDesperfecto
+    JOIN Repuestos r ON dr.IdRepuesto = r.Id
+    WHERE (@id IS NULL OR p.Id = @id);
+END;
+

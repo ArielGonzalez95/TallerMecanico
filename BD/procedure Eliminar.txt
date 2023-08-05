@@ -1,0 +1,23 @@
+CREATE PROCEDURE EliminarPresupuesto
+    @PresupuestoId INT
+AS
+BEGIN
+  
+    DELETE FROM DesperfectoRepuesto
+    WHERE IdDesperfecto IN (SELECT Id FROM Desperfecto WHERE IdPresupuesto = @PresupuestoId);
+
+
+    DELETE FROM Desperfecto WHERE IdPresupuesto = @PresupuestoId;
+
+ 
+    DELETE FROM Presupuesto WHERE Id = @PresupuestoId;
+
+   
+    DELETE FROM Automovil WHERE IdVehiculo = (SELECT IdVehiculo FROM Presupuesto WHERE Id = @PresupuestoId);
+
+    
+    DELETE FROM Moto WHERE IdVehiculo = (SELECT IdVehiculo FROM Presupuesto WHERE Id = @PresupuestoId);
+
+    
+    DELETE FROM Vehiculo WHERE Id = (SELECT IdVehiculo FROM Presupuesto WHERE Id = @PresupuestoId);
+END

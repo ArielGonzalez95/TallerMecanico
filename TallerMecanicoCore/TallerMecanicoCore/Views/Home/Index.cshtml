@@ -1,0 +1,75 @@
+﻿@using TallerMecanicoCore.DTO;
+@model IEnumerable<DatosPresupuesto>
+
+@{
+    ViewData["Title"] = "Presupuestos de Reparaciones";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Presupuestos de Reparaciones</h1>
+
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Apellido</th>
+            <th>Email</th>
+            <th>Total</th>
+            <th>Marca</th>
+            <th>Modelo</th>
+            <th>Patente</th>
+            <th>Cantidad Puertas</th>
+            <th>Cilindrada</th>
+            <th>Descripción</th>
+            <th>Mano de Obra</th>
+            <th>Tiempo</th>
+            <th>Nombre Repuesto</th>
+            <th>Precio</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Nombre</td>
+                <td>@item.Apellido</td>
+                <td>@item.Email</td>
+                <td>@item.Total</td>
+                <td>@item.Marca</td>
+                <td>@item.Modelo</td>
+                <td>@item.Patente</td>
+                <td>@item.CantidadPuertas</td>
+                <td>@item.Cilindrada</td>
+                <td>@item.Descripcion</td>
+                <td>@item.Manodeobra</td>
+                <td>@item.Tiempo</td>
+                <td>@item.NombreRepuesto</td>
+                <td>@item.Precio</td>
+                <td>
+                    <a asp-action="GenerarPresupuesto" asp-route-id="@item.Id" class="btn btn-primary">Generar Presupuesto</a>
+                    <button type="button" onclick="eliminarPresupuesto(@item.Id)" class="btn btn-danger">Eliminar Presupuesto</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<script>
+
+    function eliminarPresupuesto(presupuestoId) {
+        if (confirm("¿Estás seguro de que deseas eliminar este presupuesto?")) {
+            $.ajax({
+                url: '@Url.Action("EliminarPresupuesto", "Home")' + '?presupuestoId=' + presupuestoId,
+                type: 'POST',
+                success: function (data) {
+                    alert(data); 
+                    location.reload();
+                },
+                error: function (error) {
+                    alert("Error al eliminar el presupuesto.");
+                }
+            });
+        }
+    }
+
+</script>
